@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>준호의 피라미드 홀로그램</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      height: 100vh;
+      background: black;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+
+    canvas#stars {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    #controls-panel {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+    }
+
+    input[type="file"] {
+      background: #222;
+      border: 1px solid #888;
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    table {
+      margin: auto;
+      border-collapse: collapse;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+      user-select: none;
+    }
+
+    td {
+      padding: 0 10px;
+    }
+
+    video {
+      width: 20vw;
+      height: 20vw;
+      object-fit: cover;
+      background: black;
+      border-radius: 10px;
+      display: block;
+    }
+
+    #topVideo {
+      transform: scaleY(-1);
+    }
+
+    #leftVideo {
+      transform: rotate(90deg) scaleX(-1);
+      transform-origin: center;
+    }
+
+    #rightVideo {
+      transform: rotate(-90deg);
+      transform-origin: center;
+    }
+
+    #bottomVideo {
+      /* 기본 상태 */
+    }
+
+    #hitbox {
+      width: 6vw;
+      height: 6vw;
+      background-color: rgba(128, 128, 128, 0.3);
+      border-radius: 12px;
+      margin: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="stars"></canvas>
+
+  <div id="controls-panel">
+    <input type="file" id="fileInput" accept="video/*,image/*" />
+  </div>
+
+  <table>
+    <tr>
+      <td></td>
+      <td><video id="topVideo" autoplay muted loop playsinline></video></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><video id="leftVideo" autoplay muted loop playsinline></video></td>
+      <td><div id="hitbox"></div></td>
+      <td><video id="rightVideo" autoplay muted loop playsinline></video></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><video id="bottomVideo" autoplay muted loop playsinline></video></td>
+      <td></td>
+    </tr>
+  </table>
+
+  <script>
+    // 반짝이 별 애니메이션
+    const canvas = document.getElementById('stars');
+    const ctx = canvas.getContext('2d');
+    const stars = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    for (let i = 0; i < 100; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 1.5,
+        speed: Math.random() * 0.5 + 0.2
+      });
+    }
+
+    function animateStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "white";
+      stars.forEach(star => {
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.fill();
+        star.y += star.speed;
+        if (star.y > canvas.height) {
+          star.y = 0;
+          star.x = Math.random() * canvas.width;
+        }
+      });
+      requestAnimationFrame(animateStars);
+    }
+
+    animateStars();
+
+    // 업로드한 영상/이미지를 4개 비디오에 넣기
+    const input = document.getElementById('fileInput');
+    const videoIds = ['topVideo', 'bottomVideo', 'leftVideo', 'rightVideo'];
+    const videos = videoIds.map(id => document.getElementById(id));
+
+    input.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const url = URL.createObjectURL(file);
+
+      videos.forEach(video => {
+        video.src = url;
+        video.load();
+        video.play();
+      });
+    });
+  </script>
+</body>
+</html>
