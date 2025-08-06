@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>준호의 홀로그램 미디어</title>
+  <title>준호의 궁극의 홀로그램</title>
   <style>
     html, body {
       margin: 0; padding: 0;
@@ -19,6 +19,36 @@
       width: 100%;
       height: 100%;
       z-index: 0;
+    }
+
+    .media-layer {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 33vw;
+      height: 33vw;
+      object-fit: cover;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.9;
+    }
+
+    .top { transform: translate(-50%, -100%) scaleY(-1); }
+    .bottom { transform: translate(-50%, 0%); }
+    .left { transform: translate(-100%, -50%) rotate(90deg) scaleX(-1); transform-origin: center; }
+    .right { transform: translate(0%, -50%) rotate(-90deg); transform-origin: center; }
+
+    #hitbox {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 6vw;
+      height: 6vw;
+      background-color: rgba(128, 128, 128, 0.3);
+      border-radius: 12px;
+      transform: translate(-50%, -50%);
+      z-index: 2;
     }
 
     #controls-panel {
@@ -38,73 +68,26 @@
       font-size: 14px;
       cursor: pointer;
     }
-
-    table {
-      margin: auto;
-      border-collapse: collapse;
-      text-align: center;
-      position: relative;
-      z-index: 2;
-      user-select: none;
-    }
-
-    td {
-      padding: 0 10px;
-      width: 22vw;
-      height: 22vw;
-    }
-
-    .media {
-      width: 20vw;
-      height: 20vw;
-      object-fit: cover;
-      background: black;
-      border-radius: 10px;
-      display: block;
-    }
-
-    .top { transform: scaleY(-1); }
-    .bottom {}
-    .left { transform: rotate(90deg) scaleX(-1); transform-origin: center; }
-    .right { transform: rotate(-90deg); transform-origin: center; }
-
-    #hitbox {
-      width: 6vw;
-      height: 6vw;
-      background-color: rgba(128, 128, 128, 0.3);
-      border-radius: 12px;
-      margin: auto;
-    }
   </style>
 </head>
 <body>
 
+  <!-- 별 반짝이 배경 -->
   <canvas id="stars"></canvas>
 
+  <!-- 업로드 UI -->
   <div id="controls-panel">
     <input type="file" id="fileInput" accept="video/*,image/*" />
   </div>
 
-  <table>
-    <tr>
-      <td></td>
-      <td id="top"></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td id="left"></td>
-      <td><div id="hitbox"></div></td>
-      <td id="right"></td>
-    </tr>
-    <tr>
-      <td></td>
-      <td id="bottom"></td>
-      <td></td>
-    </tr>
-  </table>
+  <!-- 동적 배경 삽입될 위치 -->
+  <div id="mediaContainer"></div>
+
+  <!-- 중앙 히트박스 -->
+  <div id="hitbox"></div>
 
   <script>
-    // 별 배경
+    // ✨ 별 애니메이션
     const canvas = document.getElementById('stars');
     const ctx = canvas.getContext('2d');
     const stars = [];
@@ -144,40 +127,37 @@
 
     animateStars();
 
-    // 파일 업로드 처리
+    // 📁 파일 선택 시 처리
     const input = document.getElementById('fileInput');
+    const container = document.getElementById('mediaContainer');
     const directions = ['top', 'bottom', 'left', 'right'];
 
-    input.addEventListener('change', e => {
+    input.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
       const url = URL.createObjectURL(file);
-      const isVideo = file.type.startsWith('video');
-      const isImage = file.type.startsWith('image');
+      const type = file.type;
 
-      directions.forEach(direction => {
-        const container = document.getElementById(direction);
-        container.innerHTML = ''; // 기존 제거
+      container.innerHTML = ''; // 기존 삭제
 
-        let element;
-        if (isVideo) {
-          element = document.createElement('video');
-          element.src = url;
-          element.autoplay = true;
-          element.loop = true;
-          element.muted = true;
-          element.playsInline = true;
-        } else if (isImage) {
-          element = document.createElement('img');
-          element.src = url;
+      directions.forEach(dir => {
+        let el;
+        if (type.startsWith('image')) {
+          el = document.createElement('img');
+          el.src = url;
+        } else if (type.startsWith('video')) {
+          el = document.createElement('video');
+          el.src = url;
+          el.autoplay = true;
+          el.loop = true;
+          el.muted = true;
+          el.playsInline = true;
         }
-
-        element.className = `media ${direction}`;
-        container.appendChild(element);
+        el.className = `media-layer ${dir}`;
+        container.appendChild(el);
       });
     });
   </script>
-
 </body>
 </html>
