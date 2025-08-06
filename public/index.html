@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>준호의 피라미드 홀로그램</title>
+  <title>준호의 홀로그램 미디어</title>
   <style>
     html, body {
       margin: 0; padding: 0;
@@ -50,9 +50,11 @@
 
     td {
       padding: 0 10px;
+      width: 22vw;
+      height: 22vw;
     }
 
-    video {
+    .media {
       width: 20vw;
       height: 20vw;
       object-fit: cover;
@@ -61,23 +63,10 @@
       display: block;
     }
 
-    #topVideo {
-      transform: scaleY(-1);
-    }
-
-    #leftVideo {
-      transform: rotate(90deg) scaleX(-1);
-      transform-origin: center;
-    }
-
-    #rightVideo {
-      transform: rotate(-90deg);
-      transform-origin: center;
-    }
-
-    #bottomVideo {
-      /* 기본 상태 */
-    }
+    .top { transform: scaleY(-1); }
+    .bottom {}
+    .left { transform: rotate(90deg) scaleX(-1); transform-origin: center; }
+    .right { transform: rotate(-90deg); transform-origin: center; }
 
     #hitbox {
       width: 6vw;
@@ -99,23 +88,23 @@
   <table>
     <tr>
       <td></td>
-      <td><video id="topVideo" autoplay muted loop playsinline></video></td>
+      <td id="top"></td>
       <td></td>
     </tr>
     <tr>
-      <td><video id="leftVideo" autoplay muted loop playsinline></video></td>
+      <td id="left"></td>
       <td><div id="hitbox"></div></td>
-      <td><video id="rightVideo" autoplay muted loop playsinline></video></td>
+      <td id="right"></td>
     </tr>
     <tr>
       <td></td>
-      <td><video id="bottomVideo" autoplay muted loop playsinline></video></td>
+      <td id="bottom"></td>
       <td></td>
     </tr>
   </table>
 
   <script>
-    // 반짝이 별 애니메이션
+    // 별 배경
     const canvas = document.getElementById('stars');
     const ctx = canvas.getContext('2d');
     const stars = [];
@@ -155,23 +144,40 @@
 
     animateStars();
 
-    // 업로드한 영상/이미지를 4개 비디오에 넣기
+    // 파일 업로드 처리
     const input = document.getElementById('fileInput');
-    const videoIds = ['topVideo', 'bottomVideo', 'leftVideo', 'rightVideo'];
-    const videos = videoIds.map(id => document.getElementById(id));
+    const directions = ['top', 'bottom', 'left', 'right'];
 
     input.addEventListener('change', e => {
       const file = e.target.files[0];
       if (!file) return;
 
       const url = URL.createObjectURL(file);
+      const isVideo = file.type.startsWith('video');
+      const isImage = file.type.startsWith('image');
 
-      videos.forEach(video => {
-        video.src = url;
-        video.load();
-        video.play();
+      directions.forEach(direction => {
+        const container = document.getElementById(direction);
+        container.innerHTML = ''; // 기존 제거
+
+        let element;
+        if (isVideo) {
+          element = document.createElement('video');
+          element.src = url;
+          element.autoplay = true;
+          element.loop = true;
+          element.muted = true;
+          element.playsInline = true;
+        } else if (isImage) {
+          element = document.createElement('img');
+          element.src = url;
+        }
+
+        element.className = `media ${direction}`;
+        container.appendChild(element);
       });
     });
   </script>
+
 </body>
 </html>
